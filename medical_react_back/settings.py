@@ -44,7 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'rest_framework',
-    'corsheaders'
+    'rest_framework.authtoken',
+    'corsheaders',
+    'imagekit',
+    'doctor_api',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +150,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_CREDENTIALS = True
