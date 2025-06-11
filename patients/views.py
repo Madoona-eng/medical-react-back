@@ -25,7 +25,7 @@ class AppointmentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def perform_create(self, serializer):
-        # Automatically set the patient name from the logged-in user
+        # Always set patientName from the logged-in user's username (from token)
         serializer.save(patientName=self.request.user.username)
 
 class PatientAppointmentListView(generics.ListAPIView):
