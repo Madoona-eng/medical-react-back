@@ -46,9 +46,24 @@ class PatientProfileView(generics.RetrieveUpdateAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-            
-        return Response(serializer.data)
+        validated_data = serializer.validated_data
+        if 'email' in validated_data:
+            instance.email = validated_data['email']
+        if 'phone' in validated_data:
+            instance.phone = validated_data['phone']
+        if 'username' in validated_data:
+            instance.username = validated_data['username']
+        if 'first_name' in validated_data:
+            instance.first_name = validated_data['first_name']
+        if 'last_name' in validated_data:
+            instance.last_name = validated_data['last_name']
+        if 'image' in validated_data:
+            instance.image = validated_data['image']
+        instance.save()
+        # Return only name, email, and phone in the response
+        response_data = {
+            'name': instance.username,
+            'email': instance.email,
+            'phone': getattr(instance, 'phone', None)
+        }
+        return Response(response_data)

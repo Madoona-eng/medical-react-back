@@ -9,11 +9,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # API Endpoints
-    path('api/', include([
-        path('doctors/', include('doctor_api.urls')),  # Doctor API endpoints
-        path('patients/', include('patients.urls')),    # Patient API endpoints
-        path('accounts/', include('accounts.urls')),    # Account management
-    ])),
+    path('api/doctors/', include('doctor_api.urls')),  # Doctor API endpoints
+    path('api/patients/', include('patients.urls')),    # Patient API endpoints
+    path('api/accounts/', include('accounts.urls')),    # Account management
     
     # Authentication Endpoints
     path('api/auth/', include([
