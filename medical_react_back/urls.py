@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     # Admin interface
@@ -17,8 +17,8 @@ urlpatterns = [
     
     # Authentication Endpoints
     path('api/auth/', include([
-        path('token/', obtain_auth_token, name='api_token_auth'),  # Token authentication
+        path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # JWT token authentication
+        path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
         path('', include('rest_framework.urls')),  # Browsable API login
     ])),
-    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
