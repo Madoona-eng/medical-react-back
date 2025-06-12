@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import generics, permissions, status
 from .models import CustomUser, Appointment, Specialty
 from .serializers import DoctorSerializer, SpecialtySerializer, AppointmentSerializer,PatientProfileSerializer
+from .models import CustomUser, Appointment  # ✅ This points to accounts.models.Appointment via patients.models
 
 class DoctorListView(generics.ListAPIView):
     serializer_class = DoctorSerializer
@@ -25,8 +26,8 @@ class AppointmentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def perform_create(self, serializer):
-        # Always set patientName from the logged-in user's username (from token)
         serializer.save(patientName=self.request.user.username)
+
 
 class PatientAppointmentListView(generics.ListAPIView):
     serializer_class = AppointmentSerializer
