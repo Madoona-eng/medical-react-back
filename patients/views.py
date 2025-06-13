@@ -7,6 +7,15 @@ from rest_framework import generics, permissions, status
 from .models import CustomUser, Appointment, Specialty
 from .serializers import DoctorSerializer, SpecialtySerializer, AppointmentSerializer,PatientProfileSerializer
 from .models import CustomUser, Appointment  # ✅ This points to accounts.models.Appointment via patients.models
+from rest_framework import generics
+from .models import Appointment
+from .serializers import AppointmentSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status as http_status
+from .models import Appointment
+from rest_framework.permissions import IsAuthenticated
 
 class DoctorListView(generics.ListAPIView):
     serializer_class = DoctorSerializer
@@ -68,3 +77,21 @@ class PatientProfileView(generics.RetrieveUpdateAPIView):
             'phone': getattr(instance, 'phone', None)
         }
         return Response(response_data)
+    
+class AppointmentUpdateView(generics.UpdateAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+    
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_appointment(request, pk):
+    try:
+        appt = Appointment.objects.get(pk=pk)
+        appt.status = "cancelled"
+        appt.save()
+        return Response({"message": "Appointment cancelled."}, status=http_status.HTTP_200_OK)
+    except Appointment.DoesNotExist:
+        return Response({"error": "Appointment not found."}, status=http_status.HTTP_404_NOT_FOUND)

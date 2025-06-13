@@ -67,7 +67,8 @@ class SpecialtySerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     doctorId = serializers.IntegerField(source='doctor.id')
-    
+    doctorName = serializers.CharField(source='doctor.username', read_only=True)  # ✅
+
     class Meta:
         model = Appointment
-        fields = ['id', 'patientName', 'doctorId', 'date', 'time', 'status']
+        fields = ['id', 'patientName', 'doctorId', 'doctorName', 'date', 'time', 'status']

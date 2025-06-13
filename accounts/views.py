@@ -119,5 +119,6 @@ class SpecialtyDetailView(APIView):
         return Response(status=204)
     
 class AppointmentListView(ListAPIView):
-    queryset = Appointment.objects.all()
+    queryset = Appointment.objects.all().order_by('-date', '-time')  # Optional: sort by latest
     serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]  # ✅ Require login to access
