@@ -6,7 +6,7 @@ import re
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name', 'email','id']
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -54,5 +54,5 @@ class DoctorSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ['id', 'patientName', 'doctor', 'date', 'time', 'status']
-        read_only_fields = ['status']
+        fields = ['id', 'patientName', 'date', 'time', 'status', 'doctor']
+        read_only_fields = ['doctor']

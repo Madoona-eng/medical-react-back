@@ -283,21 +283,70 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def my_appointments(self, request):
+        """Get all appointments for the logged-in doctor"""
+        if request.user.role != 'Doctor':
+            return Response({"error": "Only doctors can access appointments"}, status=status.HTTP_403_FORBIDDEN)
+            
+        appointments = Appointment.objects.filter(doctor=request.user).order_by('date', 'time')
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['PATCH'])
+    def update_appointment_status(self, request, pk=None):
+        """Update the status of a specific appointment"""
+        try:
+            appointment = Appointment.objects.get(pk=pk, doctor=request.user)
+            new_status = request.data.get('status')
+            
+            if not new_status or new_status not in dict(Appointment.STATUS_CHOICES):
+                return Response(
+                    {"error": "Invalid status. Must be one of: pending, confirmed, cancelled"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            appointment.status = new_status
+            appointment.save()
+            
+            serializer = AppointmentSerializer(appointment)
+            return Response(serializer.data)
+            
+        except Appointment.DoesNotExist:
+            return Response(
+                {"error": "Appointment not found or you don't have permission to modify it"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.role == 'Doctor':
-            return Appointment.objects.filter(doctor=self.request.user)
-        else:
-            return Appointment.objects.filter(patientName=self.request.user.get_full_name())
+        return Appointment.objects.filter(doctor=self.request.user).order_by('date', 'time')
 
-    def perform_create(self, serializer):
-        if self.request.user.role == 'Patient':
-            serializer.save(patientName=self.request.user.get_full_name())
-        else:
-            serializer.save()
+    def create(self, request, *args, **kwargs):
+        # Ensure the doctor field is set to the logged-in user
+        request.data['doctor'] = request.user.id
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Only allow updating the status
+        if 'status' in request.data:
+            if request.data['status'] not in dict(Appointment.STATUS_CHOICES):
+                return Response(
+                    {"error": "Invalid status. Must be one of: pending, confirmed, cancelled"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            instance.status = request.data['status']
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        return Response(
+            {"error": "Only status field can be updated"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
