@@ -318,6 +318,29 @@ class DoctorViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+    @action(detail=True, methods=['GET'], url_path='appointments', permission_classes=[])
+    def appointments(self, request, pk=None):
+        """Return all appointments for a specific doctor by user id (public endpoint)"""
+        from accounts.models import Appointment, CustomUser
+        try:
+            doctor_user = CustomUser.objects.get(id=pk, role='Doctor')
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'Doctor not found.'}, status=404)
+        appointments = Appointment.objects.filter(doctor=doctor_user)
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['GET'], url_path='availability', permission_classes=[])
+    def public_availability(self, request, pk=None):
+        """Return the availability schedule for a specific doctor by user id (public endpoint)"""
+        from accounts.models import CustomUser
+        try:
+            doctor_user = CustomUser.objects.get(id=pk, role='Doctor')
+            doctor = Doctor.objects.get(user=doctor_user)
+            return Response(doctor.get_availability())
+        except (CustomUser.DoesNotExist, Doctor.DoesNotExist):
+            return Response({'detail': 'Doctor not found.'}, status=404)
+
 class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
